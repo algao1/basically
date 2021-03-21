@@ -10,7 +10,6 @@ import (
 	"github.com/algao1/basically/btrank"
 	"github.com/algao1/basically/document"
 	"github.com/algao1/basically/parser"
-	"github.com/algao1/basically/sentence"
 )
 
 func main() {
@@ -29,10 +28,8 @@ func main() {
 
 	p := &parser.Parser{}
 	s := &btrank.BiasedTextRank{}
-	fil := sentence.NVFilter
-	sim := sentence.DefaultSimilarity
 
-	document, err := document.Create(string(data), s, nil, p, fil, sim)
+	document, err := document.Create(string(data), s, nil, p)
 	if err != nil {
 		log.Fatal(err)
 	}

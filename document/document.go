@@ -5,6 +5,7 @@ import (
 	"sort"
 
 	"github.com/algao1/basically"
+	"github.com/algao1/basically/document/sentence"
 )
 
 // A Config represents a setting that changes the summarization process.
@@ -14,10 +15,22 @@ type Config func(cfgs *Configs)
 
 // Configs control the summarization process.
 type Configs struct {
-	quotations   bool    // Default disables merging sentences within quotations.
-	conjunctions bool    // TODO: Default removes conjunctions from beginning of sentences.
-	focus        bool    // Default uses the first sentence as focus if a focus is not provided.
-	threshold    float64 // Default sets the similarity threshold to 0.65 as recommended in Biased TextRank.
+	filter       basically.TokenFilter // Default uses sentence.DefaultSimilarity.
+	similarity   basically.Similarity  // Default uses sentence.NVFilter.
+	quotations   bool                  // Default disables merging of sentences within quotations.
+	conjunctions bool                  // TODO: Default removes conjunctions from the beginning of sentences.
+	focus        bool                  // Default uses the first sentence as focus if a focus sentence is not provided.
+	threshold    float64               // Default sets the similarity threshold to 0.65 as recommended in Biased TextRank.
+}
+
+// WithCustomFilter allows for a custom (black/white) token filter to be set.
+func WithCustomFilter(filter basically.TokenFilter) Config {
+	return func(cfgs *Configs) { cfgs.filter = filter }
+}
+
+// WithCustomSimilarity allows for a custom similarity function to be set.
+func WithCustomSimilarity(similarity basically.Similarity) Config {
+	return func(cfgs *Configs) { cfgs.similarity = similarity }
 }
 
 // WithoutMergeQuotations disables merging sentences within quotations.
@@ -31,20 +44,16 @@ func WithoutFocus() Config {
 }
 
 // WithCustomThreshold sets the similarity threshold as per the specification.
-// Lower threshold values correspond with sparse graphs, and higher threshold values
-// correspond with dense graphs.
-func (doc *Document) WithCustomThreshold(threshold float64) Config {
-	return func(cfgs *Configs) {
-		cfgs.threshold = threshold
-	}
+// Lower threshold values correspond with sparser graphs, and higher threshold values
+// correspond with denser graphs.
+func WithCustomThreshold(threshold float64) Config {
+	return func(cfgs *Configs) { cfgs.threshold = threshold }
 }
 
 // Document is an implementation of basically.Document.
 type Document struct {
 	// Configurations and dependency injection.
 	Configs     *Configs
-	Similarity  basically.Similarity
-	Filter      basically.TokenFilter
 	Summarizer  basically.Summarizer
 	Highlighter basically.Highlighter
 	Parser      basically.Parser
@@ -53,11 +62,16 @@ type Document struct {
 	Words     []*basically.Token
 }
 
-func Create(text string, s basically.Summarizer, h basically.Highlighter, p basically.Parser,
-	fil basically.TokenFilter, sim basically.Similarity, cfgs ...Config) (basically.Document, error) {
+func Create(text string, s basically.Summarizer, h basically.Highlighter,
+	p basically.Parser, cfgs ...Config) (basically.Document, error) {
 	// Initializes and applies the configurations.
 	// The threshold is set based on the results from https://www.aclweb.org/anthology/P04-3020.pdf.
-	configs := Configs{focus: true, threshold: 0.65}
+	configs := Configs{
+		filter:     sentence.NVFilter,
+		similarity: sentence.DefaultSimilarity,
+		focus:      true,
+		threshold:  0.65,
+	}
 	for _, applyConfig := range cfgs {
 		applyConfig(&configs)
 	}
@@ -71,8 +85,6 @@ func Create(text string, s basically.Summarizer, h basically.Highlighter, p basi
 	// Create and return the document.
 	doc := &Document{
 		Configs:     &configs,
-		Filter:      fil,
-		Similarity:  sim,
 		Summarizer:  s,
 		Highlighter: h,
 		Parser:      p,
@@ -84,8 +96,6 @@ func Create(text string, s basically.Summarizer, h basically.Highlighter, p basi
 
 // Summarize returns a summary of the given text with the top relevant phrases according
 // to the user-specified configuration.
-// For example, summarizing using a custom token filter:
-// 		topSents := textrank.Summarize("...", length, textrank.WithCustomFilter(filter))
 func (doc *Document) Summarize(length int, raw string) ([]*basically.Sentence, error) {
 	// Sanity check to see if the text is sufficiently long.
 	if length > len(doc.Sentences) {
@@ -106,7 +116,7 @@ func (doc *Document) Summarize(length int, raw string) ([]*basically.Sentence, e
 	}
 
 	// Initializes and ranks the sentences.
-	doc.Summarizer.Initialize(doc.Sentences, doc.Similarity, doc.Filter, focus, doc.Configs.threshold)
+	doc.Summarizer.Initialize(doc.Sentences, doc.Configs.similarity, doc.Configs.filter, focus, doc.Configs.threshold)
 	doc.Summarizer.Rank(5)
 
 	// Sorts the ranked sentences first by score, then by their sentence order in the original text.
