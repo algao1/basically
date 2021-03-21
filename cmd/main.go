@@ -2,37 +2,49 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"strconv"
 	"time"
 
-	"github.com/algao1/basically"
+	"github.com/algao1/basically/btrank"
+	"github.com/algao1/basically/document"
+	"github.com/algao1/basically/parser"
+	"github.com/algao1/basically/sentence"
 )
 
 func main() {
 	start := time.Now()
-	summaryLen, err := strconv.Atoi(os.Args[1])
-	if err != nil {
-		log.Fatal()
-	}
+
+	sumlen, _ := strconv.Atoi(os.Args[1])
 	file := os.Args[2]
+	data, err := os.ReadFile(file)
+	if err != nil {
+		log.Fatal(err)
+	}
+	focus := ""
+	if len(os.Args) > 3 {
+		focus = os.Args[3]
+	}
 
-	data, err := ioutil.ReadFile(file)
+	p := &parser.Parser{}
+	s := &btrank.BiasedTextRank{}
+	fil := sentence.NVFilter
+	sim := sentence.DefaultSimilarity
+
+	document, err := document.Create(string(data), s, nil, p, fil, sim)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	topSentences, err := basically.Summarize(string(data), summaryLen)
+	sums, err := document.Summarize(sumlen, focus)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	var result string
-	for _, node := range topSentences {
-		result += node.Sentence
-		fmt.Printf("[%.2f] %s\n", node.Score, node.Sentence)
+	for _, sum := range sums {
+		fmt.Printf("[%.2f, %.2f]\n", sum.Score, sum.Sentiment)
+		fmt.Println(sum.Raw)
 	}
 
 	elapsed := time.Since(start)
