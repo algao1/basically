@@ -36,12 +36,14 @@ func (p *Parser) ParseDocument(doc string, quote bool) ([]*basically.Sentence, [
 			btokens = append(btokens, &btok)
 		}
 
+		// Analyzes sentence sentiment.
 		sentiment := analyzer.PolarityScores(sent.Text).Compound
 
 		retSents = append(retSents, &basically.Sentence{
 			Raw:       sent.Text,
 			Tokens:    btokens,
 			Sentiment: sentiment,
+			Bias:      1.0,
 			Order:     idx,
 		})
 		retTokens = append(retTokens, btokens...)
