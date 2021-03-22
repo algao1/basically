@@ -33,6 +33,18 @@ func WithCustomSimilarity(similarity basically.Similarity) Config {
 	return func(cfgs *Configs) { cfgs.similarity = similarity }
 }
 
+// WithConjunctions disables removing conjunctions from the start of sentences.
+func WithConjunctions() Config {
+	return func(cfgs *Configs) { cfgs.conjunctions = true }
+}
+
+// WithCustomThreshold sets the similarity threshold as per the specification.
+// Lower threshold values correspond with sparser graphs, and higher threshold values
+// correspond with denser graphs.
+func WithCustomThreshold(threshold float64) Config {
+	return func(cfgs *Configs) { cfgs.threshold = threshold }
+}
+
 // WithoutMergeQuotations disables merging sentences within quotations.
 func WithoutMergeQuotations() Config {
 	return func(cfgs *Configs) { cfgs.quotations = false }
@@ -41,13 +53,6 @@ func WithoutMergeQuotations() Config {
 // WithoutFocus disables the use of a focus for ranking sentence scores.
 func WithoutFocus() Config {
 	return func(cfgs *Configs) { cfgs.focus = false }
-}
-
-// WithCustomThreshold sets the similarity threshold as per the specification.
-// Lower threshold values correspond with sparser graphs, and higher threshold values
-// correspond with denser graphs.
-func WithCustomThreshold(threshold float64) Config {
-	return func(cfgs *Configs) { cfgs.threshold = threshold }
 }
 
 // Document is an implementation of basically.Document.
@@ -67,10 +72,11 @@ func Create(text string, s basically.Summarizer, h basically.Highlighter,
 	// Initializes and applies the configurations.
 	// The threshold is set based on the results from https://www.aclweb.org/anthology/P04-3020.pdf.
 	configs := Configs{
-		filter:     sentence.NVFilter,
-		similarity: sentence.DefaultSimilarity,
-		focus:      true,
-		threshold:  0.65,
+		filter:       sentence.NVFilter,
+		similarity:   sentence.DefaultSimilarity,
+		conjunctions: false,
+		focus:        true,
+		threshold:    0.65,
 	}
 	for _, applyConfig := range cfgs {
 		applyConfig(&configs)
@@ -122,6 +128,13 @@ func (doc *Document) Summarize(length int, raw string) ([]*basically.Sentence, e
 	// Sorts the ranked sentences first by score, then by their sentence order in the original text.
 	sort.SliceStable(doc.Sentences, func(i, j int) bool { return doc.Sentences[i].Score > doc.Sentences[j].Score })
 	sort.SliceStable(doc.Sentences[:length], func(i, j int) bool { return doc.Sentences[i].Order < doc.Sentences[j].Order })
+
+	// Handle conjunctions at the beginning of sentences.
+	if !doc.Configs.conjunctions {
+		for _, sent := range doc.Sentences[:length] {
+			sentence.RemoveConjunction(sent)
+		}
+	}
 
 	return doc.Sentences[:length], nil
 }

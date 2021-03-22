@@ -1,0 +1,53 @@
+package sentence
+
+import (
+	"strings"
+	"unicode"
+	"unicode/utf8"
+
+	"github.com/algao1/basically"
+)
+
+// RemoveConjunction removes the first coordinating conjunction
+// (for, and, nor, etc.) from the sentence.
+func RemoveConjunction(s *basically.Sentence) {
+	// Sanity check to ensure that s is sufficiently long.
+	if len(s.Tokens) < 2 {
+		return
+	}
+
+	if s.Tokens[0].Tag == "CC" {
+		idx := strings.Index(s.Raw, s.Tokens[0].Text)
+		len := utf8.RuneCountInString(s.Tokens[0].Text) + 1
+		s.Raw = Capitalize(SubStr(s.Raw, idx+len, -1))
+		s.Tokens = s.Tokens[1:]
+	}
+}
+
+// Capitalize capitalizes the first word in a string.
+func Capitalize(s string) string {
+	var upperStr string
+	srunes := []rune(s)
+	for idx := range srunes {
+		if idx == 0 {
+			srunes[idx] = unicode.ToUpper(srunes[idx])
+		}
+		upperStr += string(srunes[idx])
+	}
+	return upperStr
+}
+
+// SubStr returns the substring of s between start and end.
+func SubStr(s string, start, end int) string {
+	counter, startIdx := 0, 0
+	for idx := range s {
+		if counter == start {
+			startIdx = idx
+		}
+		if counter == end {
+			return s[startIdx:idx]
+		}
+		counter++
+	}
+	return s[startIdx:]
+}
