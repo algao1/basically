@@ -132,7 +132,7 @@ func (doc *Document) Summarize(length int, raw string) ([]*basically.Sentence, e
 	// Handle conjunctions at the beginning of sentences.
 	if !doc.Configs.conjunctions {
 		for _, sent := range doc.Sentences[:length] {
-			sentence.RemoveConjunction(sent)
+			sentence.RemoveConj(sent)
 		}
 	}
 

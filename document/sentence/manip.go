@@ -8,10 +8,10 @@ import (
 	"github.com/algao1/basically"
 )
 
-// RemoveConjunction removes the first coordinating conjunction
+// RemoveConj removes the first coordinating conjunction
 // (for, and, nor, etc.) from the sentence.
-func RemoveConjunction(s *basically.Sentence) {
-	// Sanity check to ensure that s is sufficiently long.
+func RemoveConj(s *basically.Sentence) {
+	// Sanity check to ensure that the string is sufficiently long.
 	if len(s.Tokens) < 2 {
 		return
 	}
@@ -24,10 +24,10 @@ func RemoveConjunction(s *basically.Sentence) {
 	}
 }
 
-// Capitalize capitalizes the first word in a string.
-func Capitalize(s string) string {
+// Capitalize capitalizes the first letter in a string.
+func Capitalize(str string) string {
 	var upperStr string
-	srunes := []rune(s)
+	srunes := []rune(str)
 	for idx := range srunes {
 		if idx == 0 {
 			srunes[idx] = unicode.ToUpper(srunes[idx])
@@ -38,16 +38,16 @@ func Capitalize(s string) string {
 }
 
 // SubStr returns the substring of s between start and end.
-func SubStr(s string, start, end int) string {
+func SubStr(str string, start, end int) string {
 	counter, startIdx := 0, 0
-	for idx := range s {
+	for idx := range str {
 		if counter == start {
 			startIdx = idx
 		}
 		if counter == end {
-			return s[startIdx:idx]
+			return str[startIdx:idx]
 		}
 		counter++
 	}
-	return s[startIdx:]
+	return str[startIdx:]
 }
