@@ -25,6 +25,7 @@ func (p *Parser) ParseDocument(doc string, quote bool) ([]*basically.Sentence, [
 	retSents := make([]*basically.Sentence, 0, len(sents))
 	retTokens := make([]*basically.Token, 0, len(sents)*15)
 
+	tokCounter := 0
 	for idx, sent := range sents {
 		tokens := wordTokenizer.Tokenize(sent.Text)
 		tokens = tagger.Tagger.Tag(tokens)
@@ -32,8 +33,9 @@ func (p *Parser) ParseDocument(doc string, quote bool) ([]*basically.Sentence, [
 		// Convert struct from []*prose.Token to []*basically.Token.
 		btokens := make([]*basically.Token, 0, len(tokens))
 		for _, tok := range tokens {
-			btok := basically.Token(*tok)
+			btok := basically.Token{Tag: tok.Tag, Text: tok.Text, Order: tokCounter}
 			btokens = append(btokens, &btok)
+			tokCounter++
 		}
 
 		// Analyzes sentence sentiment.
