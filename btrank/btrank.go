@@ -1,8 +1,6 @@
 package btrank
 
-import (
-	"github.com/algao1/basically"
-)
+import "github.com/algao1/basically"
 
 // A SGraph is an undirected graph, representing the sentences within a document.
 // The nodes represent individual sentences, and edges represent the connection
