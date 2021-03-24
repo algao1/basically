@@ -154,6 +154,7 @@ func (kwtr *KWTextRank) Highlight(words int, merge bool) ([]*basically.Keyword, 
 func mergeKW(kws []*basically.Keyword) *basically.Keyword {
 	word := ""
 	max := 0.0
+	min := 0.0
 	sum := 0.0
 	for idx, kw := range kws {
 		if idx > 0 {
@@ -161,9 +162,10 @@ func mergeKW(kws []*basically.Keyword) *basically.Keyword {
 		}
 		word += kw.Word
 		max = math.Max(max, kw.Weight)
+		min = math.Min(min, kw.Weight)
 		sum += kw.Weight
 	}
 
-	weight := max - math.Log10(max)
+	weight := max + math.Log10(max) - math.Log(min+1)
 	return &basically.Keyword{Word: word, Weight: weight}
 }
