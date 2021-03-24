@@ -68,6 +68,7 @@ func (btr *BiasedTextRank) outWeights() []float64 {
 	return weights
 }
 
+// Rank applies the Biased TextRank algorithm on the SGraph for some specified iterations.
 func (btr *BiasedTextRank) Rank(iters int) {
 	n := len(btr.Graph.Nodes)
 	outWeights := btr.outWeights()

@@ -10,6 +10,7 @@ import (
 	"github.com/algao1/basically/btrank"
 	"github.com/algao1/basically/document"
 	"github.com/algao1/basically/parser"
+	"github.com/algao1/basically/trank"
 )
 
 func main() {
@@ -28,8 +29,9 @@ func main() {
 
 	p := &parser.Parser{}
 	s := &btrank.BiasedTextRank{}
+	kwtr := &trank.KWTextRank{}
 
-	document, err := document.Create(string(data), s, nil, p)
+	document, err := document.Create(string(data), s, kwtr, p)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -42,6 +44,15 @@ func main() {
 	for _, sum := range sums {
 		fmt.Printf("[%.2f, %.2f]\n", sum.Score, sum.Sentiment)
 		fmt.Println(sum.Raw)
+	}
+
+	kws, err := document.Highlight(-1, true)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, kw := range kws {
+		fmt.Println(kw.Weight, kw.Word)
 	}
 
 	elapsed := time.Since(start)

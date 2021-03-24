@@ -1,6 +1,8 @@
 package parser
 
 import (
+	"strings"
+
 	"github.com/algao1/basically"
 	"github.com/algao1/basically/internal/prose"
 	"github.com/jonreiter/govader"
@@ -33,7 +35,7 @@ func (p *Parser) ParseDocument(doc string, quote bool) ([]*basically.Sentence, [
 		// Convert struct from []*prose.Token to []*basically.Token.
 		btokens := make([]*basically.Token, 0, len(tokens))
 		for _, tok := range tokens {
-			btok := basically.Token{Tag: tok.Tag, Text: tok.Text, Order: tokCounter}
+			btok := basically.Token{Tag: tok.Tag, Text: strings.ToLower(tok.Text), Order: tokCounter}
 			btokens = append(btokens, &btok)
 			tokCounter++
 		}
