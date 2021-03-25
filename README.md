@@ -39,8 +39,8 @@ if err != nil {
 	log.Fatal(err)
 }
 
-// Summarize the document into 7 sentences with respect to a focus sentence.
-sents, err := document.Summarize(7, focus)
+// Summarize the document into 7 sentences, with no threshold value, and with respect to a focus sentence.
+sents, err := document.Summarize(7, 0, focus)
 if err != nil {
 	log.Fatal(err)
 }
