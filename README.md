@@ -8,13 +8,17 @@ First, the document is parsed into its constituent sentences and words using a s
 
 For **keyword extraction**, all words that pass the syntactic filter are added to a undirected, weighted graph, and an edge is added between words that co-occur within a window of $N$ words. The edge weight is set to be inversely proportional to the distance between the words. Each vertex is assigned an initial score of 1, and the following ranking algorithm is run on the graph
 
-$$TR(V_i) = (1 - d) + d \times \sum_{V_j \in In(V_i)} \frac{w_{ji}}{\sum_{V_k \in Out(v_j)} w_{jk}} TR(V_j)$$
+<div align="center">
+	<img src="https://latex.codecogs.com/svg.latex?TR(V_i)&space;=&space;(1&space;-&space;d)&space;&plus;&space;d&space;\times&space;\sum_{V_j&space;\in&space;In(V_i)}&space;\frac{w_{ji}}{\sum_{V_k&space;\in&space;Out(v_j)}&space;w_{jk}}&space;TR(V_j)" title="TR(V_i) = (1 - d) + d \times \sum_{V_j \in In(V_i)} \frac{w_{ji}}{\sum_{V_k \in Out(v_j)} w_{jk}} TR(V_j)" />
+</div>
 
 During post-processing, adjacent keywords are collapsed into a multi-word keyword, and the top keywords are then extracted.
 
 For **sentence extraction**, every sentence is added to a undirected, weighted graph, with an edge between sentences that share *common content*. The edge weight is set simply as the number of common tokens between the lexical representations of the two sentences. Each vertex is also assigned an initial score of 1, and a bias score based on the focus text, before the following ranking algorithm is run on the graph
 
-$$BTR(V_i) = Bias \times (1 - d) + d \times \sum_{V_j \in In(V_i)} \frac{w_{ji}}{\sum_{V_k \in Out(v_j)} w_{jk}} BTR(V_j)$$
+<div align="center">
+	<img src="https://latex.codecogs.com/svg.latex?BTR(V_i)&space;=&space;Bias&space;\times&space;(1&space;-&space;d)&space;&plus;&space;d&space;\times&space;\sum_{V_j&space;\in&space;In(V_i)}&space;\frac{w_{ji}}{\sum_{V_k&space;\in&space;Out(v_j)}&space;w_{jk}}&space;BTR(V_j)" title="BTR(V_i) = Bias \times (1 - d) + d \times \sum_{V_j \in In(V_i)} \frac{w_{ji}}{\sum_{V_k \in Out(v_j)} w_{jk}} BTR(V_j)" />
+</div>
 
 The top weighted sentences are then selected and sorted in chronological order to form a summary.
 
