@@ -1,7 +1,6 @@
 package trank
 
 import (
-	"fmt"
 	"math"
 	"sort"
 
@@ -102,13 +101,9 @@ func (kwtr *KWTextRank) outWeights() map[string]float64 {
 // Highlight sorts the keywords by weight, and returns the most significant keywords.
 // Can optionally be specified to merge keywords together to get multi-word extraction.
 func (kwtr *KWTextRank) Highlight(words int, merge bool) ([]*basically.Keyword, error) {
-	// Sanity check to ensure that requested word count is below maximum.
-	if words > len(kwtr.Graph.Nodes) {
-		return nil, fmt.Errorf("unable to highlight document, not enough keywords")
-	}
-
-	// If the number of keywords is negative, automatically set to 1/3 of nodes.
-	if words < 0 {
+	// If the number of keywords is negative, or greater than the number of vertices,
+	// automatically set to be 1/3 of the nodes.
+	if words < 0 || words > len(kwtr.Graph.Nodes) {
 		words = len(kwtr.Graph.Nodes) / 3
 	}
 
