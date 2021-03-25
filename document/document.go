@@ -3,6 +3,7 @@ package document
 import (
 	"fmt"
 	"sort"
+	"unicode/utf8"
 
 	"github.com/algao1/basically"
 	"github.com/algao1/basically/document/sentence"
@@ -70,9 +71,11 @@ type Document struct {
 	Summarizer  basically.Summarizer
 	Highlighter basically.Highlighter
 	Parser      basically.Parser
-	// Parsed sentences, and words.
+	// Document related information.
 	Sentences []*basically.Sentence
 	Words     []*basically.Token
+	CharCount int
+	SummCount int
 }
 
 func Create(text string, s basically.Summarizer, h basically.Highlighter,
@@ -106,13 +109,15 @@ func Create(text string, s basically.Summarizer, h basically.Highlighter,
 		Parser:      p,
 		Sentences:   sents,
 		Words:       words,
+		CharCount:   utf8.RuneCountInString(text),
+		SummCount:   0,
 	}
 	return doc, nil
 }
 
 // Summarize returns a summary of given length corresponding to the top relevant phrases.
 // A focus string may be provided to adjust the summary contents.
-func (doc *Document) Summarize(length int, raw string) ([]*basically.Sentence, error) {
+func (doc *Document) Summarize(length int, threshold float64, raw string) ([]*basically.Sentence, error) {
 	// Sanity check to ensure that the given text is sufficiently large.
 	if length > len(doc.Sentences) {
 		return nil, fmt.Errorf("text is too short")
@@ -135,8 +140,19 @@ func (doc *Document) Summarize(length int, raw string) ([]*basically.Sentence, e
 	doc.Summarizer.Initialize(doc.Sentences, doc.Configs.similarity, doc.Configs.sfilter, focus, doc.Configs.threshold)
 	doc.Summarizer.Rank(5)
 
-	// Sorts the ranked sentences first by score, then by their sentence order in the original text.
+	// Sorts the ranked sentences by score.
 	sort.SliceStable(doc.Sentences, func(i, j int) bool { return doc.Sentences[i].Score > doc.Sentences[j].Score })
+
+	// Calculates the summary word count, and limits the summary based on threshold.
+	for idx, sent := range doc.Sentences[:length] {
+		doc.SummCount += utf8.RuneCountInString(sent.Raw)
+		if threshold > 0 && float64(doc.SummCount)/float64(doc.CharCount) > threshold {
+			length = idx + 1
+			break
+		}
+	}
+
+	// Sorts the ranked sentences by sentence order in the original text.
 	sort.SliceStable(doc.Sentences[:length], func(i, j int) bool { return doc.Sentences[i].Order < doc.Sentences[j].Order })
 
 	// Handle conjunctions at the beginning of sentences.
@@ -155,4 +171,9 @@ func (doc *Document) Highlight(length int, merge bool) ([]*basically.Keyword, er
 	doc.Highlighter.Initialize(doc.Words, doc.Configs.kwfilter, 2)
 	doc.Highlighter.Rank(25)
 	return doc.Highlighter.Highlight(length, merge)
+}
+
+// Characters returns the character count of the original text, and the summarized text (if any).
+func (doc *Document) Characters() (int, int) {
+	return doc.CharCount, doc.SummCount
 }

@@ -31,22 +31,25 @@ func main() {
 	s := &btrank.BiasedTextRank{}
 	kwtr := &trank.KWTextRank{}
 
-	document, err := document.Create(string(data), s, kwtr, p)
+	doc, err := document.Create(string(data), s, kwtr, p)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	sums, err := document.Summarize(sumlen, focus)
+	sums, err := doc.Summarize(sumlen, 0.3, focus)
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	orig, redu := doc.Characters()
+	fmt.Println("Reduced by:", (1-float64(redu)/float64(orig))*100)
 
 	for _, sum := range sums {
 		fmt.Printf("[%.2f, %.2f]\n", sum.Score, sum.Sentiment)
 		fmt.Println(sum.Raw)
 	}
 
-	kws, err := document.Highlight(-1, true)
+	kws, err := doc.Highlight(-1, true)
 	if err != nil {
 		log.Fatal(err)
 	}

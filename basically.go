@@ -3,12 +3,13 @@ package basically
 // A Document represents a given text, and is responsible for
 // handling the summarization and keyword extraction process.
 type Document interface {
-	Summarize(length int, focus string) ([]*Sentence, error)
+	Summarize(length int, threshold float64, focus string) ([]*Sentence, error)
 	Highlight(length int, merge bool) ([]*Keyword, error)
+	Characters() (int, int)
 }
 
 // A Parser is responsible for parsing and tokenizing a document
-// into strings and words. A Parse also performs additional tasks
+// into strings and words. A Parser also performs additional tasks
 // such as POS-tagging and sentiment analysis.
 type Parser interface {
 	ParseDocument(doc string, quote bool) ([]*Sentence, []*Token, error)
