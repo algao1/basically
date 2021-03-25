@@ -49,7 +49,7 @@ func main() {
 		fmt.Println(sum.Raw)
 	}
 
-	kws, err := doc.Highlight(-1, true)
+	kws, err := doc.Highlight(20, true)
 	if err != nil {
 		log.Fatal(err)
 	}
