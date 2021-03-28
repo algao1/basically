@@ -19,7 +19,8 @@ func RemoveConj(s *basically.Sentence) {
 	if s.Tokens[0].Tag == "CC" {
 		idx := strings.Index(s.Raw, s.Tokens[0].Text)
 		len := utf8.RuneCountInString(s.Tokens[0].Text) + 1
-		s.Raw = Capitalize(SubStr(s.Raw, idx+len, -1))
+		s.Raw = strings.TrimSpace(SubStr(s.Raw, idx+len, -1))
+		s.Raw = Capitalize(s.Raw)
 		s.Tokens = s.Tokens[1:]
 	}
 }
