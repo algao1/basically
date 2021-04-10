@@ -23,5 +23,6 @@ func DefaultSimilarity(n1, n2 []*basically.Token, filter basically.TokenFilter) 
 			freqTable[norm]++
 		}
 	}
+
 	return ret / (math.Log10(l1) + math.Log10(l2))
 }

@@ -82,7 +82,11 @@ func Create(text string, s basically.Summarizer, h basically.Highlighter,
 	p basically.Parser, cfgs ...Config) (basically.Document, error) {
 	// Initializes and applies the configurations.
 	// The threshold is set based on the results from https://www.aclweb.org/anthology/P04-3020.pdf.
-	m := sentence.CreateMatcher()
+	m, err := sentence.CreateMatcher()
+	if err != nil {
+		return nil, fmt.Errorf("%q: %w", "unable to create matcher", err)
+	}
+
 	configs := Configs{
 		sfilter:      m.NVFilter,
 		kwfilter:     m.NVNSFilter,
@@ -112,6 +116,7 @@ func Create(text string, s basically.Summarizer, h basically.Highlighter,
 		CharCount:   utf8.RuneCountInString(text),
 		SummCount:   0,
 	}
+
 	return doc, nil
 }
 
@@ -129,6 +134,7 @@ func (doc *Document) Summarize(length int, threshold float64, raw string) ([]*ba
 		if err != nil {
 			return nil, fmt.Errorf("%q: %w", "unable to parse focus sentence", err)
 		}
+
 		if len(sents) > 0 {
 			focus = sents[0]
 		}

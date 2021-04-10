@@ -41,22 +41,22 @@ type Similarity func(n1, n2 []*Token, filter TokenFilter) float64
 type Token struct {
 	Tag   string // The token's part-of-speech tag.
 	Text  string // The token's actual content.
-	Order int
+	Order int    // The token's order in the text.
 }
 
 // A Keyword is the keyword belonging to a highlighted document.
 // A Keyword contains the raw word, and its associated weight.
 type Keyword struct {
-	Word   string
-	Weight float64
+	Word   string  // Raw keyword.
+	Weight float64 // Weight of the keyword.
 }
 
 // A Sentence represents an individual sentence within the text.
 type Sentence struct {
-	Raw       string
-	Tokens    []*Token
-	Sentiment float64
-	Score     float64
-	Bias      float64
-	Order     int
+	Raw       string   // Raw sentence string.
+	Tokens    []*Token // Tokenized sentence.
+	Sentiment float64  // Sentiment score.
+	Score     float64  // Score (weight) of the sentence.
+	Bias      float64  // Bias assigned to the sentence for ranking.
+	Order     int      // The sentence's order in the text.
 }

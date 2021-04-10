@@ -1,6 +1,7 @@
 package sentence
 
 import (
+	"fmt"
 	"os"
 	"path"
 	"runtime"
@@ -15,17 +16,20 @@ type Matcher struct {
 	Stopwords map[string]struct{}
 }
 
-func CreateMatcher() *Matcher {
+// CreateMatcher creates a Matcher and loads stopwords into a dictionary.
+func CreateMatcher() (*Matcher, error) {
 	m := &Matcher{Stopwords: make(map[string]struct{})}
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
-		panic("No caller information")
+		return nil, fmt.Errorf("no caller information")
 	}
+
 	words, _ := os.ReadFile(path.Join(path.Dir(filename), "stopwords.txt"))
 	for _, word := range strings.Split(string(words), "\n") {
 		m.Stopwords[word] = struct{}{}
 	}
-	return m
+
+	return m, nil
 }
 
 // NVFilter is a filter that whitelists tokens with (n)oun and (v)erb tags.
@@ -62,6 +66,7 @@ func IsAdv(tag string) bool {
 	return tag == "RB" || tag == "RBR" || tag == "RBS" || tag == "RP"
 }
 
+// AlphaStart determines if the starting rune in the given string is a letter.
 func AlphaStart(text string) bool {
 	r, _ := utf8.DecodeRuneInString(text)
 	return unicode.IsLetter(r)

@@ -29,26 +29,31 @@ func RemoveConj(s *basically.Sentence) {
 func Capitalize(str string) string {
 	var upperStr string
 	srunes := []rune(str)
+
 	for idx := range srunes {
 		if idx == 0 {
 			srunes[idx] = unicode.ToUpper(srunes[idx])
 		}
 		upperStr += string(srunes[idx])
 	}
+
 	return upperStr
 }
 
 // SubStr returns the substring of s between start and end.
 func SubStr(str string, start, end int) string {
 	counter, startIdx := 0, 0
+
 	for idx := range str {
 		if counter == start {
 			startIdx = idx
 		}
+
 		if counter == end {
 			return str[startIdx:idx]
 		}
 		counter++
 	}
+
 	return str[startIdx:]
 }

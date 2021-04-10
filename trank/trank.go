@@ -124,6 +124,7 @@ func (kwtr *KWTextRank) Highlight(words int, merge bool) ([]*basically.Keyword, 
 			kwdict[kw.Word] = kw
 		}
 
+		// Procedure is similar to maximal-munch.
 		queue := make([]*basically.Keyword, 0)
 		for _, tok := range kwtr.Tokens {
 			if kw, ok := kwdict[tok.Text]; ok {
@@ -151,6 +152,7 @@ func mergeKW(kws []*basically.Keyword) *basically.Keyword {
 	max := 0.0
 	min := 0.01
 	sum := 0.0
+
 	for idx, kw := range kws {
 		if idx > 0 {
 			word += " "

@@ -76,6 +76,7 @@ func (btr *BiasedTextRank) Rank(iters int) {
 	for iter := 0; iter < iters; iter++ {
 		for x := 0; x < n; x++ {
 			var sum float64
+
 			for y := 0; y < n; y++ {
 				// Ignore node if the outWeights are too small.
 				if outWeights[y] < 1e-4 {
@@ -83,6 +84,7 @@ func (btr *BiasedTextRank) Rank(iters int) {
 				}
 				sum += btr.edge(x, y) * (btr.Graph.Nodes[y].Score / outWeights[y])
 			}
+
 			btr.Graph.Nodes[x].Score = btr.Graph.Nodes[x].Bias*0.15 + 0.85*sum
 		}
 	}
