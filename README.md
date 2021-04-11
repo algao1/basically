@@ -57,7 +57,7 @@ if err != nil {
 }
 
 for _, sent := range sents {
-	fmt.Printf("[%.2f, %.2f] %s\n", sum.Score, sum.Sentiment, sum.Raw)
+	fmt.Printf("[%.2f, %.2f] %s\n", sent.Score, sent.Sentiment, sent.Raw)
 }
 ```
 
