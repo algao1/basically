@@ -8,29 +8,38 @@ import (
 	"github.com/jonreiter/govader"
 )
 
-type Parser struct{}
+type Parser struct {
+	sentTokenizer *prose.PunktSentenceTokenizer
+	wordTokenizer *prose.IterTokenizer
+	tagger        *prose.PerceptronTagger
+	analyzer      *govader.SentimentIntensityAnalyzer
+}
 
 var _ basically.Parser = (*Parser)(nil)
+
+// Create initializes the tokenizers, tagger, and sentiment analyzer.
+// Token classification is disabled for performance speed-up.
+func Create() *Parser {
+	return &Parser{
+		sentTokenizer: prose.NewPunktSentenceTokenizer(),
+		wordTokenizer: prose.NewIterTokenizer(),
+		tagger:        prose.DefaultModel(true, false).Tagger,
+		analyzer:      govader.NewSentimentIntensityAnalyzer(),
+	}
+}
 
 // ParseDocument parses a document into sentences and tokens.
 // The result contains additional information such as sentence sentiment,
 // and POS-tags for tokens.
 func (p *Parser) ParseDocument(doc string, quote bool) ([]*basically.Sentence, []*basically.Token, error) {
-	// Initialize tokenizers, taggers, and sentiment analyzers.
-	sentTokenizer := prose.NewPunktSentenceTokenizer()
-	wordTokenizer := prose.NewIterTokenizer()
-	// Disable token classification for performance speed-up.
-	tagger := prose.DefaultModel(true, false)
-	analyzer := govader.NewSentimentIntensityAnalyzer()
-
-	sents := sentTokenizer.Segment(doc)
+	sents := p.sentTokenizer.Segment(doc)
 	retSents := make([]*basically.Sentence, 0, len(sents))
 	retTokens := make([]*basically.Token, 0, len(sents)*15)
 
 	tokCounter := 0
 	for idx, sent := range sents {
-		tokens := wordTokenizer.Tokenize(sent.Text)
-		tokens = tagger.Tagger.Tag(tokens)
+		tokens := p.wordTokenizer.Tokenize(sent.Text)
+		tokens = p.tagger.Tag(tokens)
 
 		// Convert struct from []*prose.Token to []*basically.Token.
 		btokens := make([]*basically.Token, 0, len(tokens))
@@ -41,7 +50,7 @@ func (p *Parser) ParseDocument(doc string, quote bool) ([]*basically.Sentence, [
 		}
 
 		// Analyzes sentence sentiment.
-		sentiment := analyzer.PolarityScores(sent.Text).Compound
+		sentiment := p.analyzer.PolarityScores(sent.Text).Compound
 
 		retSents = append(retSents, &basically.Sentence{
 			Raw:       sent.Text,
@@ -50,6 +59,7 @@ func (p *Parser) ParseDocument(doc string, quote bool) ([]*basically.Sentence, [
 			Bias:      1.0,
 			Order:     idx,
 		})
+
 		retTokens = append(retTokens, btokens...)
 	}
 
