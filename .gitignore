@@ -8,9 +8,6 @@
 # Test binary, built with `go test -c`
 *.test
 
-# Folder containing test data
-/test
-
 # Binary for executable
 /cmd/cmd
 
