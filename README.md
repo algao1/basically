@@ -26,8 +26,8 @@ Further information on the two algorithms can be found [here](https://web.eecs.u
 
 ## Installation
 
-```console
-go get https://github.com/algao1/basically
+```shell
+go get github.com/algao1/basically
 ``` 
 
 ## Usage
